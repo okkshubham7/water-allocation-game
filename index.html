@@ -128,8 +128,8 @@
   function submitGame() {
     const participantId = document.getElementById('participant-id').value.trim();
     if (!participantId) {
-      alert("Enter Participant ID");
-      return;
+        alert("Enter Participant ID");
+        return;
     }
 
     const data = { ParticipantID: participantId };
@@ -137,28 +137,35 @@
     const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
 
     waterTypes.forEach(type => {
-      purposes.forEach(purpose => {
-        let count = 0;
-        document.querySelectorAll('.crate').forEach(crate => {
-          if (crate.querySelector('.crate-label').innerText === purpose) {
-            count += [...crate.querySelectorAll('.space')].filter(space => space.firstChild && space.firstChild.innerText === type).length;
-          }
+        purposes.forEach(purpose => {
+            let count = 0;
+            document.querySelectorAll('.crate').forEach(crate => {
+                if (crate.querySelector('.crate-label').innerText === purpose) {
+                    count += [...crate.querySelectorAll('.space')].filter(space => space.firstChild && space.firstChild.innerText === type).length;
+                }
+            });
+            data[`${type}x${purpose}`] = count;
         });
-        data[`${type}x${purpose}`] = count;
-      });
     });
 
-    fetch('https://script.google.com/macros/s/AKfycbyAuodCe86S4z1XZ5Kv7KFVWR3MKLelQTe5uDuj0HSzgeQgMqoLlQrf7pwdf05pMm_a8g/exec', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' }
+    console.log("Submitting Data:", data);  // ✅ Check if data is correct in the browser console
+
+    fetch('https://script.google.com/macros/s/AKfycbx6kEnbnAczLXOEULkKuomF3tNsurgEKWVtF1-uBrfSvQXQCkiLBtTdeKswPUITVP0K/exec', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
     })
-    .then(() => {
-      alert("Thank you for the submission!");
-      resetGame();
+    .then(response => response.text())
+    .then(responseText => {
+        console.log("Server Response:", responseText);  // ✅ See what the server returns
+        alert("Thank you for the submission!");
+        resetGame();
     })
-    .catch(error => alert("Error submitting data."));
-  }
+    .catch(error => {
+        console.error("Error submitting data:", error);
+        alert("Error submitting data. Check the console for details.");
+    });
+}
 
   function resetGame() {
     location.reload();
