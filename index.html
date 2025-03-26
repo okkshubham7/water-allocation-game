@@ -125,36 +125,43 @@
     document.getElementById('submit-button').disabled = !participantId;
   }
 
-  function submitGame() {
-    const participantId = document.getElementById('participant-id').value.trim();
-    if (!participantId) {
-      alert("Enter Participant ID");
-      return;
-    }
+ function submitGame() {
+  const participantId = document.getElementById('participant-id').value.trim();
+  if (!participantId) {
+    alert("Enter Participant ID");
+    return;
+  }
 
-    const data = { ParticipantID: participantId };
-    const purposes = ['Drinking', 'Bathing', 'Washing', 'Flushing'];
-    const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
+  const data = { ParticipantID: participantId };
+  const purposes = ['Drinking', 'Bathing', 'Washing', 'Flushing'];
+  const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
 
-    waterTypes.forEach(type => {
-      purposes.forEach(purpose => {
-        let spaces = [];
-        document.querySelectorAll('.crate').forEach(crate => {
-          if (crate.querySelector('.crate-label').innerText === purpose) {
-            spaces = [...crate.querySelectorAll('.space')];
-          }
-        });
-        const count = spaces.filter(space => space.firstChild && space.firstChild.innerText === type).length;
-        data[`${type}x${purpose}`] = count;
+  waterTypes.forEach(type => {
+    purposes.forEach(purpose => {
+      let spaces = [];
+      document.querySelectorAll('.crate').forEach(crate => {
+        if (crate.querySelector('.crate-label').innerText === purpose) {
+          spaces = [...crate.querySelectorAll('.space')];
+        }
       });
+      const count = spaces.filter(space => space.firstChild && space.firstChild.innerText === type).length;
+      data[`${type}x${purpose}`] = count;
     });
+  });
 
-    fetch('https://script.google.com/macros/s/AKfycbyPZeh1v4MJvwB516KPfEXZ7j4bQluteL_yuApmUSnCRi6chd_zYw8ef9Oi_ksCcn_o/exec', {
-  method: 'POST',
-  mode: 'no-cors',  // Helps avoid CORS issues
-  body: JSON.stringify(data),
-  headers: { 'Content-Type': 'application/json' }
-})
+  fetch('https://script.google.com/macros/s/AKfycbyPZeh1v4MJvwB516KPfEXZ7j4bQluteL_yuApmUSnCRi6chd_zYw8ef9Oi_ksCcn_o/exec', {
+    method: 'POST',
+    mode: 'no-cors',  // Helps avoid CORS issues
+    body: JSON.stringify(data),
+    headers: { 'Content-Type': 'application/json' }
+  }).then(() => {
+    alert("Thank you for submitting!");
+    resetGame();
+  }).catch(error => {
+    console.error("Error submitting data:", error);
+    alert("There was an error submitting your data. Please try again.");
+  });
+}
 
   function resetGame() {
     location.reload();
