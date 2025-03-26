@@ -138,27 +138,26 @@
 
     waterTypes.forEach(type => {
       purposes.forEach(purpose => {
-        let spaces = [];
+        let count = 0;
         document.querySelectorAll('.crate').forEach(crate => {
           if (crate.querySelector('.crate-label').innerText === purpose) {
-            spaces = [...crate.querySelectorAll('.space')];
+            count += [...crate.querySelectorAll('.space')].filter(space => space.firstChild && space.firstChild.innerText === type).length;
           }
         });
-        const count = spaces.filter(space => space.firstChild && space.firstChild.innerText === type).length;
         data[`${type}x${purpose}`] = count;
       });
     });
 
-    fetch('https://script.google.com/macros/s/AKfycbz6XehMD5ui8vMn8EF4jSDUr5Kpz_NBQpEHtBsGmNoKy5isrN0_v5Nx6mBNgInfHfpYGw/exec', {
+    fetch('YOUR_GOOGLE_SCRIPT_URL_HERE', {
       method: 'POST',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' }
     })
     .then(() => {
-      alert("Data submitted successfully!");
+      alert("Thank you for the submission!");
       resetGame();
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => alert("Error submitting data."));
   }
 
   function resetGame() {
