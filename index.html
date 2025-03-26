@@ -149,19 +149,23 @@
     });
   });
 
-  fetch('https://script.google.com/macros/s/AKfycbwByKopMkWy_wQ2n0IWYY0elgFfs4x4Jz8RKr-aJ2e20-lSElsyYnNstRYugL79F54O/exec', {
-    method: 'POST',
-    mode: 'no-cors',  // Helps avoid CORS issues
-    body: JSON.stringify(data),
-    headers: { 'Content-Type': 'application/json' }
-  }).then(() => {
-    alert("Thank you for submitting!");
-    resetGame();
-  }).catch(error => {
-    console.error("Error submitting data:", error);
-    alert("There was an error submitting your data. Please try again.");
-  });
-}
+  fetch('https://script.google.com/macros/s/AKfycbylnwdRTZjg-TozwyvbdJ9yVEKZHxo4VMaKruzPdPsVzlPjHvI2rL9cjJhjqL-eiACZ/exec', {
+  method: 'POST',
+  headers: { 
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+})
+.then(response => response.json())  // Convert response to JSON
+.then(result => {
+  console.log(result);
+  alert("Thank you for submitting!");
+  resetGame();
+})
+.catch(error => {
+  console.error("Error submitting data:", error);
+  alert("There was an error submitting your data. Please try again.");
+});
 
   function resetGame() {
     location.reload();
