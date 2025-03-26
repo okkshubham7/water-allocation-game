@@ -125,52 +125,36 @@
     document.getElementById('submit-button').disabled = !participantId;
   }
 
- function submitGame() {
-  const participantId = document.getElementById('participant-id').value.trim();
-  if (!participantId) {
-    alert("Enter Participant ID");
-    return;
-  }
+  function submitGame() {
+    const participantId = document.getElementById('participant-id').value.trim();
+    if (!participantId) {
+      alert("Enter Participant ID");
+      return;
+    }
 
-  const data = { ParticipantID: participantId };
-  const purposes = ['Drinking', 'Bathing', 'Washing', 'Flushing'];
-  const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
+    const data = { ParticipantID: participantId };
+    const purposes = ['Drinking', 'Bathing', 'Washing', 'Flushing'];
+    const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
 
-  waterTypes.forEach(type => {
-    purposes.forEach(purpose => {
-      let spaces = [];
-      document.querySelectorAll('.crate').forEach(crate => {
-        if (crate.querySelector('.crate-label').innerText === purpose) {
-          spaces = [...crate.querySelectorAll('.space')];
-        }
+    waterTypes.forEach(type => {
+      purposes.forEach(purpose => {
+        let count = document.querySelectorAll(`.crate:has(.crate-label:contains(${purpose})) .space .bottle:contains(${type})`).length;
+        data[`${type}x${purpose}`] = count;
       });
-      const count = spaces.filter(space => space.firstChild && space.firstChild.innerText === type).length;
-      data[`${type}x${purpose}`] = count;
     });
-  });
 
-  fetch('https://script.google.com/macros/s/AKfycbylnwdRTZjg-TozwyvbdJ9yVEKZHxo4VMaKruzPdPsVzlPjHvI2rL9cjJhjqL-eiACZ/exec', {
-  method: 'POST',
-  headers: { 
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(data)
-})
-.then(response => response.json())  // Convert response to JSON
-.then(result => {
-  console.log(result);
-  alert("Thank you for submitting!");
-  resetGame();
-})
-.catch(error => {
-  console.error("Error submitting data:", error);
-  alert("There was an error submitting your data. Please try again.");
-});
-
-  function resetGame() {
-    location.reload();
+    fetch('YOUR_DEPLOYED_SCRIPT_URL', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => { alert("Thank you for submitting!"); resetGame(); })
+    .catch(error => { alert("Submission error!"); console.error(error); });
   }
 
+  function resetGame() { createWaterTypes(); createCrates(); }
+  
   createWaterTypes();
   createCrates();
 </script>
