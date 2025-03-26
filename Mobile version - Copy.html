@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Water Allocation Game</title>
+  <style>
+    body { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; padding: 10px; box-sizing: border-box; overflow: hidden; }
+    .container { display: flex; gap: 20px; align-items: flex-start; overflow-x: auto; max-width: 100vw; }
+    .water-types { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 70vh; }
+    .water-type { display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 8px; }
+    .bottles-row { display: flex; gap: 3px; }
+    .bottle, .space { width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 4px; font-size: 12px; }
+    .bottle { background: blue; color: white; cursor: pointer; user-select: none; touch-action: none; }
+    .space { border: 1px solid #999; background-color: #f9f9f9; }
+    .crate-label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+    .crates { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 70vh; }
+    .crate { display: flex; flex-direction: column; align-items: center; border: 1px solid #ccc; padding: 5px; border-radius: 8px; max-width: 240px; overflow-y: auto; }
+    .spaces { display: flex; gap: 3px; flex-wrap: nowrap; justify-content: center; }
+    .remove-area { width: 80px; height: 30px; background-color: #ffcccc; color: red; text-align: center; display: flex; justify-content: center; align-items: center; border: 1px solid red; cursor: pointer; margin-top: 5px; }
+    .reset-button, .submit-button { margin: 10px; padding: 8px 16px; font-size: 14px; cursor: pointer; border: none; border-radius: 5px; width: 120px; color: white; }
+    .reset-button { background: #ff5555; }
+    .submit-button { background: #55ff55; }
+    .submit-button:disabled { background: #ccc; cursor: not-allowed; }
+    input[type="text"] { padding: 5px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; width: 200px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<div>
+  <div>
+    <label for="participant-id">Enter Participant ID:</label>
+    <input type="text" id="participant-id" oninput="checkSubmitStatus()" />
+  </div>
+
+  <div class="container">
+    <div class="water-types" id="water-types"></div>
+    <div class="crates" id="crates"></div>
+  </div>
+
+  <button class="reset-button" onclick="resetGame()">Reset Game</button>
+  <button class="submit-button" id="submit-button" onclick="submitGame()" disabled>Submit</button>
+</div>
+
+<script>
+  const waterTypes = { 'P': 3, 'B': 5, 'R': 5, 'K': 5, 'S': 5, 'T': 5 };
+
+  function createWaterTypes() {
+    const waterNames = {
+      'P': 'Pure Drinking Water',
+      'B': 'Recycled Bathroom Water',
+      'R': 'Recycled Rainwater',
+      'K': 'Recycled Kitchen Water',
+      'S': 'Recycled Sewage Water',
+      'T': 'Tap Water'
+    };
+    const waterTypesContainer = document.getElementById('water-types');
+    waterTypesContainer.innerHTML = '';
+
+    for (let type in waterTypes) {
+      const waterType = document.createElement('div');
+      waterType.className = 'water-type';
+      waterType.innerHTML = `<div class="crate-label">${waterNames[type]} (${type})</div>`;
+      const bottlesRow = document.createElement('div');
+      bottlesRow.className = 'bottles-row';
+      bottlesRow.id = `row-${type}`;
+      for (let i = 1; i <= waterTypes[type]; i++) {
+        const bottle = document.createElement('div');
+        bottle.className = 'bottle';
+        bottle.id = `${type}${i}`;
+        bottle.innerText = type;
+        bottle.setAttribute('draggable', true);
+        bottle.ondragstart = drag;
+        bottlesRow.appendChild(bottle);
+      }
+      waterType.appendChild(bottlesRow);
+      waterTypesContainer.appendChild(waterType);
+    }
+  }
+
+  function createCrates() {
+    const purposes = ['Drinking', 'Bathing', 'Flushing', 'Washing'];
+    const cratesContainer = document.getElementById('crates');
+    cratesContainer.innerHTML = '';
+    purposes.forEach(purpose => {
+      const crate = document.createElement('div');
+      crate.className = 'crate';
+      crate.innerHTML = `<div class="crate-label">${purpose}</div>
+        <div class="spaces">${'<div class="space" ondrop="drop(event)" ondragover="allowDrop(event)"></div>'.repeat(7)}</div>
+        <div class="remove-area" ondrop="removeBottle(event)" ondragover="allowDrop(event)">Remove</div>`;
+      cratesContainer.appendChild(crate);
+    });
+  }
+
+  function drag(event) {
+    event.dataTransfer.setData("text", event.target.id);
+  }
+
+  function allowDrop(event) {
+    event.preventDefault();
+  }
+
+  function drop(event) {
+    event.preventDefault();
+    const data = event.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(data);
+    if (draggedElement && event.target.classList.contains('space') && !event.target.hasChildNodes()) {
+      event.target.appendChild(draggedElement);
+    }
+    checkSubmitStatus();
+  }
+
+  function removeBottle(event) {
+    const data = event.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(data);
+    if (draggedElement) {
+      const type = draggedElement.innerText;
+      document.getElementById(`row-${type}`).appendChild(draggedElement);
+    }
+    checkSubmitStatus();
+  }
+
+  function checkSubmitStatus() {
+    const participantId = document.getElementById('participant-id').value.trim();
+    document.getElementById('submit-button').disabled = !participantId;
+  }
+
+  function submitGame() {
+    const participantId = document.getElementById('participant-id').value.trim();
+    if (!participantId) {
+      alert("Enter Participant ID");
+      return;
+    }
+
+    const data = { ParticipantID: participantId };
+    const purposes = ['Drinking', 'Bathing', 'Washing', 'Flushing'];
+    const waterTypes = ['P', 'B', 'S', 'T', 'K', 'R'];
+
+    waterTypes.forEach(type => {
+      purposes.forEach(purpose => {
+        let spaces = [];
+        document.querySelectorAll('.crate').forEach(crate => {
+          if (crate.querySelector('.crate-label').innerText === purpose) {
+            spaces = [...crate.querySelectorAll('.space')];
+          }
+        });
+        const count = spaces.filter(space => space.firstChild && space.firstChild.innerText === type).length;
+        data[`${type}x${purpose}`] = count;
+      });
+    });
+
+    fetch('https://script.google.com/macros/s/AKfycbz6XehMD5ui8vMn8EF4jSDUr5Kpz_NBQpEHtBsGmNoKy5isrN0_v5Nx6mBNgInfHfpYGw/exec', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(() => {
+      alert("Data submitted successfully!");
+      resetGame();
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+  function resetGame() {
+    location.reload();
+  }
+
+  createWaterTypes();
+  createCrates();
+</script>
+
+</body>
+</html>
